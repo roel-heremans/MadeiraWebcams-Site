@@ -64,12 +64,18 @@
 <script>
 // West to east. youtube = current live video id; page = the operator's stable page for that cam.
 const CAMS = [
+  { id: "porto-moniz", name: "Porto Moniz", spot: "Natural lava pools", lat: 32.8676, lng: -17.1695,
+    youtube: "QcMxxAIo8CI", source: "Madeira-Web", page: "https://www.madeira-web.com/en/webcams/natural-pools-porto-moniz-livecam.html" },
   { id: "calheta", name: "Calheta", spot: "Calheta beach, Casa das Mudas", lat: 32.7188, lng: -17.1772,
     youtube: "4dbXjCzI5FU", source: "Madeira-Web", page: "https://www.madeira-web.com/en/webcams/calheta-beach-livecam.html" },
   { id: "ponta-do-sol", name: "Ponta do Sol", spot: "Ponta do Sol / Lugar de Baixo", lat: 32.6800, lng: -17.1030,
     youtube: "BuL1tgahkXM", source: "Portal Netmadeira", page: "https://www.netmadeira.com/webcams-madeira/ponta-do-sol" },
   { id: "ribeira-brava", name: "Ribeira Brava", spot: "Seafront", lat: 32.6720, lng: -17.0645,
     youtube: "vqM8WwHhjwg", source: "Portal Netmadeira", page: "https://www.netmadeira.com/webcams-madeira/ribeira-brava" },
+  { id: "camara-de-lobos", name: "Câmara de Lobos", spot: "Fishing harbour and bay", lat: 32.6478, lng: -16.9765,
+    youtube: "mOcMrae46P4", source: "Portal Netmadeira", page: "https://www.netmadeira.com/webcams-madeira/camara-de-lobos-baia" },
+  { id: "praia-formosa", name: "Praia Formosa", spot: "Beach, west Funchal", lat: 32.6383, lng: -16.9505,
+    youtube: "ZNf42SF9lXM", source: "Madeira-Web", page: "https://www.madeira-web.com/en/webcams/praia-formosa-beach-livecam.html" },
   { id: "pontinha", name: "Funchal Pontinha", spot: "Funchal harbour, Pontinha pier", lat: 32.6405, lng: -16.9130,
     youtube: "QZeuP3PjPDw", source: "Portal Netmadeira", page: "https://www.netmadeira.com/webcams-madeira/funchal-pontinha" },
   { id: "reis-magos", name: "Reis Magos", spot: "Praia dos Reis Magos, Caniço", lat: 32.6393, lng: -16.8325,

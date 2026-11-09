@@ -1,6 +1,6 @@
 # Madeira Webcams
 
-One page with a map of Madeira and live webcams for Calheta, Ponta do Sol, Ribeira Brava, Funchal Pontinha, Reis Magos, Santa Cruz and Machico. Click a pin or a name to play the stream.
+One page with a map of Madeira and live webcams for Porto Moniz, Calheta, Ponta do Sol, Ribeira Brava, Câmara de Lobos, Praia Formosa, Funchal Pontinha, Reis Magos, Santa Cruz and Machico. Click a pin or a name to play the stream.
 
 Live: https://roel-heremans.github.io/MadeiraWebcams-Site/
 
