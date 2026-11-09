@@ -56,7 +56,7 @@
     <div class="player" id="player"><div class="empty">Choose a webcam on the map or in the list.</div></div>
     <div class="now" id="now"></div>
     <ul class="cams" id="list"></ul>
-    <p class="note">Streams are YouTube live broadcasts by Portal Netmadeira and Madeira-Web. If a stream shows "unavailable", the operator has restarted it under a new link: use "Open on provider site".</p>
+    <p class="note">LIVE streams are YouTube broadcasts by Portal Netmadeira and Madeira-Web; LINK cams open the operator site. If a stream shows "unavailable", the operator has restarted it under a new link: use "Open on provider site".</p>
   </section>
 </main>
 
@@ -68,12 +68,12 @@ const CAMS = [
     youtube: "QcMxxAIo8CI", source: "Madeira-Web", page: "https://www.madeira-web.com/en/webcams/natural-pools-porto-moniz-livecam.html" },
   { id: "paul-do-mar", name: "Paul do Mar", spot: "Seafront, seen from O Precipício (Fajã da Ovelha)", lat: 32.7565, lng: -17.2290,
     youtube: "A36ysN816Yg", source: "Madeira-Web / Webcamtaxi", page: "https://www.madeira-web.com/en/webcams/paul-do-mar-livecam.html" },
-  { id: "jardim-do-mar", name: "Jardim do Mar", spot: "Village and surf spot (external camera, no embed)", lat: 32.7385, lng: -17.2105,
-    youtube: null, source: "Balticlivecam", page: "https://balticlivecam.com/cameras/portugal/madeira/jardim-do-mar/",
-    noVideo: "The Jardim do Mar camera is on Balticlivecam, which does not allow it to be shown inside this page.", pageLabel: "Watch it on Balticlivecam" },
-  { id: "faja-da-areia", name: "Fajã da Areia", spot: "São Vicente beach (no webcam found)", lat: 32.8045, lng: -17.0475,
-    youtube: null, source: "Portal Netmadeira", page: "https://www.netmadeira.com/webcams-madeira/seixal",
-    noVideo: "No webcam found at Fajã da Areia. The nearest live stream is Seixal, about 6 km west on the same north coast.", pageLabel: "Seixal on Portal Netmadeira",
+  { id: "jardim-do-mar", name: "Jardim do Mar", spot: "Village and surf spot (MEO Beachcam, opens their site)", lat: 32.7385, lng: -17.2105,
+    youtube: null, source: "MEO Beachcam", page: "https://beachcam.meo.pt/livecams/madeira-jardim-do-mar/",
+    noVideo: "The Jardim do Mar camera is run by MEO Beachcam, which does not allow its stream to be shown inside other pages.", pageLabel: "Watch it on MEO Beachcam" },
+  { id: "faja-da-areia", name: "Fajã da Areia", spot: "São Vicente beach (MEO Beachcam, opens their site)", lat: 32.8045, lng: -17.0475,
+    youtube: null, source: "MEO Beachcam", page: "https://beachcam.meo.pt/livecams/faja-da-areia/",
+    noVideo: "The Fajã da Areia camera is run by MEO Beachcam, which does not allow its stream to be shown inside other pages.", pageLabel: "Watch it on MEO Beachcam",
     alt: { label: "Nearby live stream: Seixal", short: "Seixal", youtube: "JcHZCL9Up20" } },
   { id: "calheta", name: "Calheta", spot: "Calheta beach, Casa das Mudas", lat: 32.7188, lng: -17.1772,
     youtube: "4dbXjCzI5FU", source: "Madeira-Web", page: "https://www.madeira-web.com/en/webcams/calheta-beach-livecam.html" },
@@ -81,6 +81,10 @@ const CAMS = [
     youtube: "BuL1tgahkXM", source: "Portal Netmadeira", page: "https://www.netmadeira.com/webcams-madeira/ponta-do-sol" },
   { id: "ribeira-brava", name: "Ribeira Brava", spot: "Seafront", lat: 32.6720, lng: -17.0645,
     youtube: "vqM8WwHhjwg", source: "Portal Netmadeira", page: "https://www.netmadeira.com/webcams-madeira/ribeira-brava" },
+  { id: "cabo-girao", name: "Cabo Girão", spot: "Sea cliff and skywalk (no camera at the cliff)", lat: 32.6555, lng: -17.0045,
+    youtube: null, source: "Madeira-Web / Webcamtaxi", page: "https://www.madeira-web.com/en/webcams/camaradelobos-cruzdacaldeira-livecam.html",
+    noVideo: "There is no webcam on Cabo Girão itself. The nearest live stream is Miradouro da Cruz da Caldeira, on the slope above Câmara de Lobos.", pageLabel: "Cruz da Caldeira on Madeira-Web",
+    alt: { label: "Nearby live stream: Cruz da Caldeira (Câmara de Lobos)", short: "Cruz da Caldeira", youtube: "1E344lR458g" } },
   { id: "camara-de-lobos", name: "Câmara de Lobos", spot: "Fishing harbour and bay", lat: 32.6478, lng: -16.9765,
     youtube: "mOcMrae46P4", source: "Portal Netmadeira", page: "https://www.netmadeira.com/webcams-madeira/camara-de-lobos-baia" },
   { id: "praia-formosa", name: "Praia Formosa", spot: "Beach, west Funchal", lat: 32.6383, lng: -16.9505,
@@ -95,6 +99,8 @@ const CAMS = [
     alt: { label: "Nearby live stream: Madeira Airport (Santa Cruz)", short: "Airport", youtube: "k61b2BeMqdA" } },
   { id: "machico", name: "Machico", spot: "Port of Machico", lat: 32.7172, lng: -16.7628,
     youtube: "Vr5lrM2oIHo", source: "Madeira-Web / Webcamtaxi", page: "https://www.madeira-web.com/en/webcams/port-machico-city-livecam.html" },
+  { id: "porto-santo", name: "Porto Santo", spot: "Porto Santo island", lat: 33.0610, lng: -16.3390,
+    youtube: "CiCT4aLS4dg", source: "Portal Netmadeira", page: "https://www.netmadeira.com/webcams-madeira/porto-santo" },
 ];
 
 const map = L.map("map", { scrollWheelZoom: true }).setView([32.70, -16.98], 10);
@@ -127,6 +133,7 @@ function select(id, useAlt = false) {
     markers[c.id].setIcon(pinIcon(c, c.id === id));
     buttons[c.id].setAttribute("aria-pressed", c.id === id);
   });
+  if (!map.getBounds().contains([cam.lat, cam.lng])) map.fitBounds(allBounds, { padding: [24, 24] });
   const vid = useAlt ? cam.alt.youtube : cam.youtube;
   if (vid) {
     embed(vid);
@@ -161,9 +168,14 @@ CAMS.forEach(cam => {
   buttons[cam.id] = b;
 });
 
-const bounds = L.latLngBounds(CAMS.map(c => [c.lat, c.lng]));
+// Open on Madeira itself; Porto Santo comes into view when it is selected.
+const bounds = L.latLngBounds(CAMS.filter(c => c.id !== "porto-santo").map(c => [c.lat, c.lng]));
+const allBounds = L.latLngBounds(CAMS.map(c => [c.lat, c.lng]));
 map.fitBounds(bounds, { padding: [24, 24] });
-window.addEventListener("load", () => { map.invalidateSize(); map.fitBounds(bounds, { padding: [24, 24] }); });
+window.addEventListener("load", () => {
+  map.invalidateSize();
+  map.fitBounds(location.hash === "#porto-santo" ? allBounds : bounds, { padding: [24, 24] });
+});
 function fromHash() {
   const id = location.hash.slice(1);
   if (CAMS.some(c => c.id === id) && buttons[id].getAttribute("aria-pressed") !== "true") select(id);
