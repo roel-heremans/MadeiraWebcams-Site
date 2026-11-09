@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Madeira Webcams</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  :root {
+    --bg: #F8F6F3; --panel: #FFFFFF; --line: #E2DDD6; --text: #1E2A24; --muted: #6B6460;
+    --brand: #1E3526; --accent: #C9AA49; --live: #C0392B;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--bg); color: var(--text); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { padding: 14px 20px; background: var(--brand); color: #fff; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  header h1 { margin: 0; font: 600 20px/1.2 Georgia, "Times New Roman", serif; letter-spacing: .02em; }
+  header p { margin: 0; opacity: .75; font-size: 13px; }
+  main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 16px; padding: 16px; height: calc(100% - 52px); }
+  #map { border-radius: 6px; border: 1px solid var(--line); min-height: 320px; }
+  .side { display: flex; flex-direction: column; gap: 12px; min-width: 0; min-height: 0; }
+  .player { background: #000; border-radius: 6px; overflow: hidden; aspect-ratio: 16 / 9; position: relative; }
+  .player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .player .empty { position: absolute; inset: 0; display: grid; place-items: center; color: #bbb; text-align: center; padding: 20px; }
+  .now { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .now h2 { margin: 0; font: 600 18px Georgia, serif; }
+  .now a { color: var(--brand); font-size: 13px; }
+  .now .src { color: var(--muted); font-size: 13px; }
+  ul.cams { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; overflow: auto; }
+  ul.cams button { width: 100%; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; cursor: pointer; font: inherit; color: inherit; }
+  ul.cams button:hover { border-color: var(--accent); }
+  ul.cams button[aria-pressed="true"] { border-color: var(--brand); box-shadow: inset 3px 0 0 var(--accent); }
+  .name { font-weight: 600; display: block; }
+  .meta { font-size: 12px; color: var(--muted); }
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; padding: 1px 6px; border-radius: 3px; margin-left: 6px; vertical-align: 2px; }
+  .badge.live { background: var(--live); color: #fff; }
+  .badge.still { background: var(--line); color: var(--muted); }
+  .note { font-size: 12px; color: var(--muted); margin: 0; }
+  .pin { width: 18px; height: 18px; border-radius: 50%; background: var(--live); border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+  .pin.still { background: var(--muted); }
+  .pin.active { background: var(--accent); transform: scale(1.3); }
+  @media (max-width: 860px) {
+    main { grid-template-columns: 1fr; height: auto; }
+    #map { height: 52vh; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Madeira Webcams</h1>
+  <p>Click a pin or a name to watch the live stream.</p>
+</header>
+<main>
+  <div id="map" aria-label="Map of Madeira with webcam locations"></div>
+  <section class="side">
+    <div class="player" id="player"><div class="empty">Choose a webcam on the map or in the list.</div></div>
+    <div class="now" id="now"></div>
+    <ul class="cams" id="list"></ul>
+    <p class="note">Streams are YouTube live broadcasts by Portal Netmadeira and Madeira-Web. If a stream shows "unavailable", the operator has restarted it under a new link: use "Open on provider site".</p>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// West to east. youtube = current live video id; page = the operator's stable page for that cam.
+const CAMS = [
+  { id: "calheta", name: "Calheta", spot: "Calheta beach, Casa das Mudas", lat: 32.7188, lng: -17.1772,
+    youtube: "4dbXjCzI5FU", source: "Madeira-Web", page: "https://www.madeira-web.com/en/webcams/calheta-beach-livecam.html" },
+  { id: "ponta-do-sol", name: "Ponta do Sol", spot: "Ponta do Sol / Lugar de Baixo", lat: 32.6800, lng: -17.1030,
+    youtube: "BuL1tgahkXM", source: "Portal Netmadeira", page: "https://www.netmadeira.com/webcams-madeira/ponta-do-sol" },
+  { id: "ribeira-brava", name: "Ribeira Brava", spot: "Seafront", lat: 32.6720, lng: -17.0645,
+    youtube: "vqM8WwHhjwg", source: "Portal Netmadeira", page: "https://www.netmadeira.com/webcams-madeira/ribeira-brava" },
+  { id: "pontinha", name: "Funchal Pontinha", spot: "Funchal harbour, Pontinha pier", lat: 32.6405, lng: -16.9130,
+    youtube: "QZeuP3PjPDw", source: "Portal Netmadeira", page: "https://www.netmadeira.com/webcams-madeira/funchal-pontinha" },
+  { id: "reis-magos", name: "Reis Magos", spot: "Praia dos Reis Magos, Caniço", lat: 32.6393, lng: -16.8325,
+    youtube: "PujA-AJpbek", source: "Madeira-Web", page: "https://www.madeira-web.com/en/webcams/reis-magos-beach-livecam.html" },
+  { id: "santa-cruz", name: "Santa Cruz", spot: "Town (snapshot camera, no live video)", lat: 32.6878, lng: -16.7915,
+    youtube: null, source: "Portal Netmadeira", page: "https://www.netmadeira.com/webcams-madeira/santa-cruz",
+    alt: { label: "Nearby live stream: Madeira Airport (Santa Cruz)", youtube: "k61b2BeMqdA" } },
+  { id: "machico", name: "Machico", spot: "Port of Machico", lat: 32.7172, lng: -16.7628,
+    youtube: "Vr5lrM2oIHo", source: "Madeira-Web / Webcamtaxi", page: "https://www.madeira-web.com/en/webcams/port-machico-city-livecam.html" },
+];
+
+const map = L.map("map", { scrollWheelZoom: true }).setView([32.70, -16.98], 10);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(map);
+
+const player = document.getElementById("player");
+const now = document.getElementById("now");
+const list = document.getElementById("list");
+const markers = {}, buttons = {};
+
+function pinIcon(cam, active) {
+  const cls = "pin" + (cam.youtube ? "" : " still") + (active ? " active" : "");
+  return L.divIcon({ className: "", html: `<div class="${cls}"></div>`, iconSize: [18, 18], iconAnchor: [9, 9] });
+}
+
+function embed(videoId) {
+  const f = document.createElement("iframe");
+  f.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&rel=0&playsinline=1`;
+  f.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+  f.allowFullscreen = true;
+  f.referrerPolicy = "strict-origin-when-cross-origin";
+  player.replaceChildren(f);
+}
+
+function select(id, useAlt = false) {
+  const cam = CAMS.find(c => c.id === id);
+  CAMS.forEach(c => {
+    markers[c.id].setIcon(pinIcon(c, c.id === id));
+    buttons[c.id].setAttribute("aria-pressed", c.id === id);
+  });
+  const vid = useAlt ? cam.alt.youtube : cam.youtube;
+  if (vid) {
+    embed(vid);
+  } else {
+    const d = document.createElement("div");
+    d.className = "empty";
+    d.innerHTML = `<div>${cam.name} has a snapshot camera, not a live video.<br><br>
+      <a href="${cam.page}" target="_blank" rel="noopener" style="color:#fff">Open the snapshot on ${cam.source} ↗</a>
+      ${cam.alt ? `<br><br><button type="button" id="altBtn">${cam.alt.label}</button>` : ""}</div>`;
+    player.replaceChildren(d);
+    const b = d.querySelector("#altBtn");
+    if (b) b.onclick = () => select(id, true);
+  }
+  now.innerHTML = `<div><h2>${cam.name}${useAlt ? " · Airport" : ""}</h2><span class="src">${useAlt ? cam.alt.label : cam.spot} · ${cam.source}</span></div>
+    <span>${vid ? `<a href="https://www.youtube.com/watch?v=${vid}" target="_blank" rel="noopener">YouTube ↗</a> · ` : ""}<a href="${cam.page}" target="_blank" rel="noopener">Open on provider site ↗</a></span>`;
+  try { history.replaceState(null, "", "#" + id); } catch (e) {}
+}
+
+CAMS.forEach(cam => {
+  const m = L.marker([cam.lat, cam.lng], { icon: pinIcon(cam, false), title: cam.name }).addTo(map);
+  m.bindTooltip(cam.name, { direction: "top", offset: [0, -10] });
+  m.on("click", () => select(cam.id));
+  markers[cam.id] = m;
+
+  const li = document.createElement("li");
+  const b = document.createElement("button");
+  b.type = "button";
+  b.innerHTML = `<span class="name">${cam.name}<span class="badge ${cam.youtube ? "live" : "still"}">${cam.youtube ? "LIVE" : "PHOTO"}</span></span><span class="meta">${cam.spot}</span>`;
+  b.onclick = () => select(cam.id);
+  li.append(b);
+  list.append(li);
+  buttons[cam.id] = b;
+});
+
+map.fitBounds(L.latLngBounds(CAMS.map(c => [c.lat, c.lng])).pad(0.15));
+const start = location.hash.slice(1);
+if (CAMS.some(c => c.id === start)) select(start);
+</script>
+</body>
+</html>
