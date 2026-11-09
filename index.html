@@ -66,6 +66,15 @@
 const CAMS = [
   { id: "porto-moniz", name: "Porto Moniz", spot: "Natural lava pools", lat: 32.8676, lng: -17.1695,
     youtube: "QcMxxAIo8CI", source: "Madeira-Web", page: "https://www.madeira-web.com/en/webcams/natural-pools-porto-moniz-livecam.html" },
+  { id: "paul-do-mar", name: "Paul do Mar", spot: "Seafront, seen from O Precipício (Fajã da Ovelha)", lat: 32.7565, lng: -17.2290,
+    youtube: "A36ysN816Yg", source: "Madeira-Web / Webcamtaxi", page: "https://www.madeira-web.com/en/webcams/paul-do-mar-livecam.html" },
+  { id: "jardim-do-mar", name: "Jardim do Mar", spot: "Village and surf spot (external camera, no embed)", lat: 32.7385, lng: -17.2105,
+    youtube: null, source: "Balticlivecam", page: "https://balticlivecam.com/cameras/portugal/madeira/jardim-do-mar/",
+    noVideo: "The Jardim do Mar camera is on Balticlivecam, which does not allow it to be shown inside this page.", pageLabel: "Watch it on Balticlivecam" },
+  { id: "faja-da-areia", name: "Fajã da Areia", spot: "São Vicente beach (no webcam found)", lat: 32.8045, lng: -17.0475,
+    youtube: null, source: "Portal Netmadeira", page: "https://www.netmadeira.com/webcams-madeira/seixal",
+    noVideo: "No webcam found at Fajã da Areia. The nearest live stream is Seixal, about 6 km west on the same north coast.", pageLabel: "Seixal on Portal Netmadeira",
+    alt: { label: "Nearby live stream: Seixal", short: "Seixal", youtube: "JcHZCL9Up20" } },
   { id: "calheta", name: "Calheta", spot: "Calheta beach, Casa das Mudas", lat: 32.7188, lng: -17.1772,
     youtube: "4dbXjCzI5FU", source: "Madeira-Web", page: "https://www.madeira-web.com/en/webcams/calheta-beach-livecam.html" },
   { id: "ponta-do-sol", name: "Ponta do Sol", spot: "Ponta do Sol / Lugar de Baixo", lat: 32.6800, lng: -17.1030,
@@ -82,7 +91,8 @@ const CAMS = [
     youtube: "PujA-AJpbek", source: "Madeira-Web", page: "https://www.madeira-web.com/en/webcams/reis-magos-beach-livecam.html" },
   { id: "santa-cruz", name: "Santa Cruz", spot: "Town (snapshot camera, no live video)", lat: 32.6878, lng: -16.7915,
     youtube: null, source: "Portal Netmadeira", page: "https://www.netmadeira.com/webcams-madeira/santa-cruz",
-    alt: { label: "Nearby live stream: Madeira Airport (Santa Cruz)", youtube: "k61b2BeMqdA" } },
+    badge: "PHOTO", noVideo: "Santa Cruz has a snapshot camera, not a live video.", pageLabel: "Open the snapshot on Portal Netmadeira",
+    alt: { label: "Nearby live stream: Madeira Airport (Santa Cruz)", short: "Airport", youtube: "k61b2BeMqdA" } },
   { id: "machico", name: "Machico", spot: "Port of Machico", lat: 32.7172, lng: -16.7628,
     youtube: "Vr5lrM2oIHo", source: "Madeira-Web / Webcamtaxi", page: "https://www.madeira-web.com/en/webcams/port-machico-city-livecam.html" },
 ];
@@ -123,14 +133,14 @@ function select(id, useAlt = false) {
   } else {
     const d = document.createElement("div");
     d.className = "empty";
-    d.innerHTML = `<div>${cam.name} has a snapshot camera, not a live video.<br><br>
-      <a href="${cam.page}" target="_blank" rel="noopener" style="color:#fff">Open the snapshot on ${cam.source} ↗</a>
+    d.innerHTML = `<div>${cam.noVideo}<br><br>
+      <a href="${cam.page}" target="_blank" rel="noopener" style="color:#fff">${cam.pageLabel} ↗</a>
       ${cam.alt ? `<br><br><button type="button" id="altBtn">${cam.alt.label}</button>` : ""}</div>`;
     player.replaceChildren(d);
     const b = d.querySelector("#altBtn");
     if (b) b.onclick = () => select(id, true);
   }
-  now.innerHTML = `<div><h2>${cam.name}${useAlt ? " · Airport" : ""}</h2><span class="src">${useAlt ? cam.alt.label : cam.spot} · ${cam.source}</span></div>
+  now.innerHTML = `<div><h2>${cam.name}${useAlt ? " · " + cam.alt.short : ""}</h2><span class="src">${useAlt ? cam.alt.label : cam.spot} · ${cam.source}</span></div>
     <span>${vid ? `<a href="https://www.youtube.com/watch?v=${vid}" target="_blank" rel="noopener">YouTube ↗</a> · ` : ""}<a href="${cam.page}" target="_blank" rel="noopener">Open on provider site ↗</a></span>`;
   try { history.replaceState(null, "", "#" + id); } catch (e) {}
 }
@@ -144,16 +154,22 @@ CAMS.forEach(cam => {
   const li = document.createElement("li");
   const b = document.createElement("button");
   b.type = "button";
-  b.innerHTML = `<span class="name">${cam.name}<span class="badge ${cam.youtube ? "live" : "still"}">${cam.youtube ? "LIVE" : "PHOTO"}</span></span><span class="meta">${cam.spot}</span>`;
+  b.innerHTML = `<span class="name">${cam.name}<span class="badge ${cam.youtube ? "live" : "still"}">${cam.youtube ? "LIVE" : (cam.badge || "LINK")}</span></span><span class="meta">${cam.spot}</span>`;
   b.onclick = () => select(cam.id);
   li.append(b);
   list.append(li);
   buttons[cam.id] = b;
 });
 
-map.fitBounds(L.latLngBounds(CAMS.map(c => [c.lat, c.lng])).pad(0.15));
-const start = location.hash.slice(1);
-if (CAMS.some(c => c.id === start)) select(start);
+const bounds = L.latLngBounds(CAMS.map(c => [c.lat, c.lng]));
+map.fitBounds(bounds, { padding: [24, 24] });
+window.addEventListener("load", () => { map.invalidateSize(); map.fitBounds(bounds, { padding: [24, 24] }); });
+function fromHash() {
+  const id = location.hash.slice(1);
+  if (CAMS.some(c => c.id === id) && buttons[id].getAttribute("aria-pressed") !== "true") select(id);
+}
+window.addEventListener("hashchange", fromHash);
+fromHash();
 </script>
 </body>
 </html>
